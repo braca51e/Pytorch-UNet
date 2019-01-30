@@ -1,11 +1,11 @@
 # full assembly of the sub-parts to form the complete net
-
 import torch.nn.functional as F
 
 from .unet_parts import *
 
+
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes):
+    def __init__(self, n_channels):
         super(UNet, self).__init__()
         self.inc = inconv(n_channels, 64)
         self.down1 = down(64, 128)
@@ -13,10 +13,11 @@ class UNet(nn.Module):
         self.down3 = down(256, 512)
         self.down4 = down(512, 512)
         self.up1 = up(1024, 256)
+
         self.up2 = up(512, 128)
         self.up3 = up(256, 64)
         self.up4 = up(128, 64)
-        self.outc = outconv(64, n_classes)
+        self.outc = outlayer(64*640*640, 4)
 
     def forward(self, x):
         x1 = self.inc(x)
@@ -29,4 +30,4 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         x = self.outc(x)
-        return F.sigmoid(x)
+        return torch.sigmoid(x)

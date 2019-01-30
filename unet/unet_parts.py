@@ -77,12 +77,12 @@ class up(nn.Module):
         x = self.conv(x)
         return x
 
-
-class outconv(nn.Module):
+class outlayer(nn.Module):
     def __init__(self, in_ch, out_ch):
-        super(outconv, self).__init__()
-        self.conv = nn.Conv2d(in_ch, out_ch, 1)
+        super(outlayer, self).__init__()
+        self.linear = nn.Linear(in_ch, out_ch)
 
     def forward(self, x):
-        x = self.conv(x)
+        x = torch.flatten(x)
+        x = self.linear(x)
         return x

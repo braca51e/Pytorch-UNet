@@ -101,7 +101,6 @@ def mask_to_image(mask):
     return Image.fromarray((mask * 255).astype(np.uint8))
 
 def init_weights(m):
-    print type(m)
     if (type(m) == torch.nn.Conv2d) or (type(m) == torch.nn.Linear):
         torch.nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(0.01)
