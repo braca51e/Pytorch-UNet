@@ -5,3 +5,6 @@ checkpoints/
 *.pth
 *.jpg
 SUBMISSION*
+
+.DS_Store
+.DS_*
