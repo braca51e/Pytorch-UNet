@@ -43,29 +43,9 @@ def predict_img(net,
         output_left = net(X_left)
         output_right = net(X_right)
 
-        left_probs = output_left.squeeze(0)
-        right_probs = output_right.squeeze(0)
-
-        tf = transforms.Compose(
-            [
-                transforms.ToPILImage(),
-                transforms.Resize(img_height),
-                transforms.ToTensor()
-            ]
-        )
-        
-        left_probs = tf(left_probs.cpu())
-        right_probs = tf(right_probs.cpu())
-
-        left_mask_np = left_probs.squeeze().cpu().numpy()
-        right_mask_np = right_probs.squeeze().cpu().numpy()
-
-    full_mask = merge_masks(left_mask_np, right_mask_np, img_width)
-
-    if use_dense_crf:
-        full_mask = dense_crf(np.array(full_img).astype(np.uint8), full_mask)
-
-    return full_mask > out_threshold
+    full_output = [output_left, output_right]
+    
+    return full_output
 
 
 
@@ -120,26 +100,20 @@ def get_output_filenames(args):
 def mask_to_image(mask):
     return Image.fromarray((mask * 255).astype(np.uint8))
 
+def init_weights(m):
+    print type(m)
+    if (type(m) == torch.nn.Conv2d) or (type(m) == torch.nn.Linear):
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
+
 if __name__ == "__main__":
     args = get_args()
     in_files = args.input
     out_files = get_output_filenames(args)
 
-    net = UNet(n_channels=3, n_classes=1)
-
-    print("Loading model {}".format(args.model))
-
-    if not args.cpu:
-        print("Using CUDA version of the net, prepare your GPU !")
-        net.cuda()
-        net.load_state_dict(torch.load(args.model))
-    else:
-        net.cpu()
-        net.load_state_dict(torch.load(args.model, map_location='cpu'))
-        print("Using CPU version of the net, this may be very slow")
-
-    print("Model loaded !")
-
+    net = UNet(n_channels=3)
+    net.apply(init_weights)
+    
     for i, fn in enumerate(in_files):
         print("\nPredicting image {} ...".format(fn))
 
@@ -156,7 +130,8 @@ if __name__ == "__main__":
 
         if args.viz:
             print("Visualizing results for image {}, close to continue ...".format(fn))
-            plot_img_and_mask(img, mask)
+            #plot_img_and_mask(img, mask)
+            print mask
 
         if not args.no_save:
             out_fn = out_files[i]
