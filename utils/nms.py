@@ -27,7 +27,7 @@ def non_max_suppression(boxes, probs=None, overlapThresh=0.3):
 	# bottom-right y-coordinate)
 	area = (x2 - x1 + 1) * (y2 - y1 + 1)
 	idxs = y2
-
+	
 	# if probabilities are provided, sort on them instead
 	if probs is not None:
 		idxs = probs
@@ -69,4 +69,4 @@ def non_max_suppression(boxes, probs=None, overlapThresh=0.3):
 		idxs = torch.index_select(idxs, 0, keep_list)
 
 	# return only the bounding boxes that were picked
-	return boxes[pick].int()
+	return boxes[pick]

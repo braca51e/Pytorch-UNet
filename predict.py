@@ -10,6 +10,7 @@ from PIL import Image
 from unet import UNet
 from utils import resize_and_crop, normalize, split_img_into_squares, hwc_to_chw, merge_masks, dense_crf
 from utils import plot_img_and_mask
+from utils import nms
 
 from torchvision import transforms
 
@@ -40,12 +41,12 @@ def predict_img(net,
         X_right = X_right.cuda()
 
     with torch.no_grad():
-        output_left = net(X_left)
-        output_right = net(X_right)
+        output_left = net(X_left).resize_([2,4])
+        output_right = net(X_right).resize_([2,4])
 
-    full_output = [output_left, output_right]
+    full_output = torch.cat((output_left, output_right),0)
     
-    return full_output
+    return nms.non_max_suppression(full_output)
 
 
 
@@ -112,7 +113,7 @@ if __name__ == "__main__":
 
     net = UNet(n_channels=3)
     net.apply(init_weights)
-    
+
     for i, fn in enumerate(in_files):
         print("\nPredicting image {} ...".format(fn))
 
@@ -129,8 +130,9 @@ if __name__ == "__main__":
 
         if args.viz:
             print("Visualizing results for image {}, close to continue ...".format(fn))
-            #plot_img_and_mask(img, mask)
-            print mask
+            plot_img_and_mask(img, mask)
+            
+        print mask
 
         if not args.no_save:
             out_fn = out_files[i]
