@@ -70,16 +70,3 @@ def non_max_suppression(boxes, probs=None, overlapThresh=0.3):
 
 	# return only the bounding boxes that were picked
 	return boxes[pick].int()
-
-a = torch.tensor([
-	(12, 84, 40, 40),
-	(12, 84, 43, 50),
-	(36, 84, 26, 12),
-	(12, 96, 28, 28),
-	(24, 96, 10, 20),
-	(24, 108, 20, 30),
-    (2, 50, 4, 12)])
-
-probs = torch.tensor([0.8, 0.8, 0.6, 0.3, 0.2, 0.9, 0.7])
-
-print non_max_suppression(a, probs)
