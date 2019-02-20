@@ -19,6 +19,7 @@ def hwc_to_chw(img):
 def resize_and_crop(pilimg, scale=0.5, final_height=None):
     w = pilimg.size[0]
     h = pilimg.size[1]
+    #Making newH = newW to get a square image
     newW = int(h * scale)
     newH = int(h * scale)
 
