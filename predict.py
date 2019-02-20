@@ -22,31 +22,25 @@ def predict_img(net,
                 use_gpu=False):
 
     net.eval()
-    img_height = full_img.size[1]
-    img_width = full_img.size[0]
 
+    #Resize and crop image to square with scale factor
     img = resize_and_crop(full_img, scale=scale_factor)
+    
     img = normalize(img)
 
-    left_square, right_square = split_img_into_squares(img)
+    img = hwc_to_chw(img)
 
-    left_square = hwc_to_chw(left_square)
-    right_square = hwc_to_chw(right_square)
-
-    X_left = torch.from_numpy(left_square).unsqueeze(0)
-    X_right = torch.from_numpy(right_square).unsqueeze(0)
+    X_img = torch.from_numpy(img).unsqueeze(0)
     
     if use_gpu:
-        X_left = X_left.cuda()
-        X_right = X_right.cuda()
+        X_img = X_img.cuda()
 
     with torch.no_grad():
-        output_left = net(X_left).resize_([2,4])
-        output_right = net(X_right).resize_([2,4])
+        output = net(X_img)
 
-    full_output = torch.cat((output_left, output_right),0)
+    output = output.resize_([100,4])
     
-    return nms.non_max_suppression(full_output)
+    return nms.non_max_suppression(output)
 
 
 
@@ -131,7 +125,7 @@ if __name__ == "__main__":
         if args.viz:
             print("Visualizing results for image {}, close to continue ...".format(fn))
             plot_img_and_mask(img, mask)
-            
+
         print mask
 
         if not args.no_save:

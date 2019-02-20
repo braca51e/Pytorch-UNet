@@ -17,7 +17,7 @@ class UNet(nn.Module):
         self.up2 = up(512, 128)
         self.up3 = up(256, 64)
         self.up4 = up(128, 64)
-        self.outc = outlayer(64*640*640, 4*2)
+        self.outc = outlayer(64*640*640, 4*100)
 
     def forward(self, x):
         x1 = self.inc(x)
