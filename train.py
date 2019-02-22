@@ -63,21 +63,24 @@ def train_net(net,
 
         for i, b in enumerate(batch(train, batch_size)):
             imgs = np.array([i[0] for i in b]).astype(np.float32)
-            true_masks = np.array([i[1] for i in b])
+            true_boxes = np.array([i[1] for i in b], dtype=np.float32)
 
             imgs = torch.from_numpy(imgs)
-            true_masks = torch.from_numpy(true_masks)
+            true_boxes = torch.from_numpy(true_boxes)
 
             if gpu:
                 imgs = imgs.cuda()
-                true_masks = true_masks.cuda()
+                true_boxes = true_boxes.cuda()
 
-            masks_pred = net(imgs)
-            masks_probs_flat = masks_pred.view(-1)
+            boxes_pred = net(imgs)
+            boxes_pred_flat = boxes_pred.view(-1)
 
-            true_masks_flat = true_masks.view(-1)
+            true_boxes_flat = true_boxes.view(-1)
 
-            loss = criterion(masks_probs_flat, true_masks_flat)
+            print('boxes_pred_flat: ', boxes_pred_flat)
+            print('true_boxes_flat: ', true_boxes_flat)
+
+            loss = criterion(boxes_pred_flat, true_boxes_flat)
             epoch_loss += loss.item()
 
             print('{0:.4f} --- loss: {1:.6f}'.format(i * batch_size / N_train, loss.item()))

@@ -1,10 +1,10 @@
 import random
 import numpy as np
 
-
 def get_square(img, pos):
     """Extract a left or a right square from ndarray shape : (H, W, C))"""
     h = img.shape[0]
+
     if pos == 0:
         return img[:, :h]
     else:
@@ -17,11 +17,13 @@ def hwc_to_chw(img):
     return np.transpose(img, axes=[2, 0, 1])
 
 def resize_and_crop(pilimg, scale=0.5, final_height=None):
+
     w = pilimg.size[0]
     h = pilimg.size[1]
-    #Making newH = newW to get a square image
-    newW = int(h * scale)
-    newH = int(h * scale)
+    #newW = int(w * scale)
+    #newH = int(h * scale)
+    newW = 572
+    newH = 572
 
     if not final_height:
         diff = 0
@@ -30,6 +32,8 @@ def resize_and_crop(pilimg, scale=0.5, final_height=None):
 
     img = pilimg.resize((newW, newH))
     img = img.crop((0, diff // 2, newW, newH - diff // 2))
+    img_tmp = np.array(img, dtype=np.uint8)
+
     return np.array(img, dtype=np.float32)
 
 def batch(iterable, batch_size):
@@ -51,7 +55,6 @@ def split_train_val(dataset, val_percent=0.05):
     random.shuffle(dataset)
     return {'train': dataset[:-n], 'val': dataset[-n:]}
 
-
 def normalize(x):
     return x / 255
 
@@ -63,7 +66,6 @@ def merge_masks(img1, img2, full_w):
     new[:, full_w // 2 + 1:] = img2[:, -(full_w // 2 - 1):]
 
     return new
-
 
 # credits to https://stackoverflow.com/users/6076729/manuel-lagunas
 def rle_encode(mask_image):
