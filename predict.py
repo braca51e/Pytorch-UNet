@@ -134,3 +134,6 @@ if __name__ == "__main__":
             result.save(out_files[i])
 
             print("Mask saved to {}".format(out_files[i]))
+
+
+

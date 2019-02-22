@@ -22,11 +22,10 @@ def train_net(net,
               img_scale=0.5):
 
     dir_img = 'data/train/'
-    dir_mask = 'data/train_masks/'
+    filepath_annotations = 'data/instances_val2017.json'
     dir_checkpoint = 'checkpoints/'
 
     ids = get_ids(dir_img)
-    ids = split_ids(ids)
 
     iddataset = split_train_val(ids, val_percent)
 
@@ -56,8 +55,8 @@ def train_net(net,
         net.train()
 
         # reset the generators
-        train = get_imgs_and_masks(iddataset['train'], dir_img, dir_mask, img_scale)
-        val = get_imgs_and_masks(iddataset['val'], dir_img, dir_mask, img_scale)
+        train = get_imgs_and_bboxes(iddataset['train'], dir_img, annotation_filepath)
+        val = get_imgs_and_bboxes(iddataset['val'], dir_img, annotation_filepath)
 
         epoch_loss = 0
 

@@ -16,6 +16,25 @@ def split_img_into_squares(img):
 def hwc_to_chw(img):
     return np.transpose(img, axes=[2, 0, 1])
 
+
+def resize_image(pilimg, final_height=640, final_width=640):
+    """ Resize image to desired input format """
+    img = pilimg.resize((final_height, final_width))
+    return np.array(img, dtype=np.float32)
+
+def normalize_bbox(bbox, img_width, img_height):
+    x = bbox[0]
+    y = bbox[1]
+    w = bbox[2]
+    h = bbox[3]
+
+    bbox[0] = x/float(img_width)
+    bbox[1] = y/float(img_height)
+    bbox[2] = w/float(img_width)
+    bbox[3] = h/float(img_height)
+
+    return np.array([bbox])
+
 def resize_and_crop(pilimg, scale=0.5, final_height=None):
     w = pilimg.size[0]
     h = pilimg.size[1]
@@ -77,3 +96,4 @@ def rle_encode(mask_image):
     runs = np.where(pixels[1:] != pixels[:-1])[0] + 2
     runs[1::2] = runs[1::2] - runs[:-1:2]
     return runs
+
