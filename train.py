@@ -21,13 +21,14 @@ def train_net(net,
               gpu=False,
               img_scale=0.5):
 
-    dir_img = 'data/train/'
-    filepath_annotations = 'data/instances_val2017.json'
+    dir_img_train = 'data/train/'
+    dir_img_val = 'data/val'
+    filepath_annotations_train = 'data/instances_train2017.json'
+    filepath_annotations_val = 'data/instances_val2017.json'
     dir_checkpoint = 'checkpoints/'
 
-    ids = get_ids(dir_img)
-
-    iddataset = split_train_val(ids, val_percent)
+    ids_train = get_ids(dir_img_train)
+    ids_val = get_ids(dir_img_val)
 
     print('''
     Starting training:
@@ -55,8 +56,8 @@ def train_net(net,
         net.train()
 
         # reset the generators
-        train = get_imgs_and_bboxes(iddataset['train'], dir_img, annotation_filepath)
-        val = get_imgs_and_bboxes(iddataset['val'], dir_img, annotation_filepath)
+        train = get_imgs_and_bboxes(ids_train.sort(), dir_img_train, filepath_annotations_train)
+        val = get_imgs_and_bboxes(ids_val.sort(), dir_img_val, filepath_annotations_val)
 
         epoch_loss = 0
 

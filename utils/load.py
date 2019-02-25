@@ -70,11 +70,11 @@ def load_annotation_information(annotation_filepath):
         #Get image information from previous load
         image_annotation = data['annotations'][j]
         image_id = image_annotation['image_id']
-        image_width = image_dimensions[image_id][0]
-        image_height = image_dimensions[image_id][1]
+        image_width = img_dimensions[image_id][0]
+        image_height = img_dimensions[image_id][1]
         
         # Normalize bounding boxes
-        new_bbox = normalize_bbox(image_annotation['bbox'], image_width, img_height)
+        new_bbox = normalize_bbox(image_annotation['bbox'], image_width, image_height)
 
         # Get bounding boxes in dict
         if image_id in bounding_boxes:
@@ -83,6 +83,18 @@ def load_annotation_information(annotation_filepath):
             bounding_boxes[image_id] = new_bbox
     
     return img_dimensions, bounding_boxes
+
+def to_standard_dimension(bounding_boxes, dimension = 100):
+    ''' Make the number of bounding boxes in an image a constant dimension
+    Append zero bounding boxes where there were less bounding boxes '''
+    null_bbox = np.array([[0.0001,0.0001,0.0001,0.0001]])
+
+    for i in bounding_boxes.keys():
+        num_bboxes = bounding_boxes[i].shape[0]
+        for j in range(dimension - num_bboxes):
+            bounding_boxes[i] = np.append(bounding_boxes[i], null_bbox, axis = 0).flatten()
+    
+    return bounding_boxes
 
 def get_imgs_and_bboxes(ids, dir_img, dir_bbox, annotation_filepath):
     """  Load & resize images, get labels (bounding boxes) """
@@ -93,8 +105,10 @@ def get_imgs_and_bboxes(ids, dir_img, dir_bbox, annotation_filepath):
     imgs_switched = map(hwc_to_chw, imgs)
     imgs_normalized = map(normalize, imgs_switched)
     
-    """ TO DO :  
-    # Add zeros when less than 100 bounding boxes
-    #bboxes = bounding_boxes
-    """
+    #Resize number of bounding boxes to constant and flatten np.array
+    bboxes = to_standard_dimension(bounding_boxes)
+
+    #Re-order bboxes
+    bboxes = [bboxes[i] for i in sorted(bboxes.keys())]
+    
     return zip(imgs_normalized, bboxes)
