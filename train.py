@@ -22,7 +22,7 @@ def train_net(net,
               img_scale=0.5):
 
     dir_img_train = 'data/train/'
-    dir_img_val = 'data/val'
+    dir_img_val = 'data/val/'
     filepath_annotations_train = 'data/instances_train2017.json'
     filepath_annotations_val = 'data/instances_val2017.json'
     dir_checkpoint = 'checkpoints/'
@@ -45,7 +45,7 @@ def train_net(net,
     '''.format(epochs, batch_size, lr, len(iddataset['train']),
                len(iddataset['val']), str(save_cp), str(gpu)))
 
-    N_train = len(iddataset['train'])
+    N_train = len(ids_train)
 
     optimizer = optim.SGD(net.parameters(),
                           lr=lr,
@@ -92,8 +92,8 @@ def train_net(net,
         print('Epoch finished ! Loss: {}'.format(epoch_loss / i))
 
         if 1:
-            val_dice = eval_net(net, val, gpu)
-            print('Validation Dice Coeff: {}'.format(val_dice))
+            val_mse = eval_net(net, val, gpu, criterion)
+            print('Validation MSE: {}'.format(val_mse))
 
         if save_cp:
             torch.save(net.state_dict(),
@@ -123,7 +123,7 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
-    net = UNet(n_channels=3, n_classes=1)
+    net = UNet(n_channels=3)
 
     if args.load:
         net.load_state_dict(torch.load(args.load))
