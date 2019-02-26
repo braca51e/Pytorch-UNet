@@ -1,6 +1,6 @@
 import random
 import numpy as np
-
+import cv2
 
 def get_square(img, pos):
     """Extract a left or a right square from ndarray shape : (H, W, C))"""
@@ -18,9 +18,14 @@ def hwc_to_chw(img):
 
 
 def resize_image(pilimg, final_height=640, final_width=640):
-    """ Resize image to desired input format """
+    """ Resize image to desired input format - if img is gray, convert to RGB"""
     img = pilimg.resize((final_height, final_width))
-    return np.array(img, dtype=np.float32)
+    np_img = np.array(img, dtype=np.float32)
+    #Convert to RGB if needed so dimensions match
+    if len(np_img.shape) < 3 :
+        return cv2.cvtColor(np_img, cv2.COLOR_GRAY2RGB)
+    else:
+        return np_img
 
 def normalize_bbox(bbox, img_width, img_height):
     x = bbox[0]
@@ -34,6 +39,18 @@ def normalize_bbox(bbox, img_width, img_height):
     bbox[3] = h/float(img_height)
 
     return np.array([bbox])
+
+def to_standard_dimension(bounding_boxes, dimension = 100):
+    ''' Make the number of bounding boxes in an image a constant dimension
+    Append zero bounding boxes where there were less bounding boxes '''
+    null_bbox = np.array([[0.0001,0.0001,0.0001,0.0001]])
+
+    for i in bounding_boxes.keys():
+        num_bboxes = bounding_boxes[i].shape[0]
+        for j in range(dimension - num_bboxes):
+            bounding_boxes[i] = np.append(bounding_boxes[i], null_bbox, axis = 0)
+        bounding_boxes[i] = bounding_boxes[i].flatten()
+    return bounding_boxes
 
 def resize_and_crop(pilimg, scale=0.5, final_height=None):
     w = pilimg.size[0]

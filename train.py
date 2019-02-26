@@ -30,6 +30,9 @@ def train_net(net,
     ids_train = get_ids(dir_img_train)
     ids_val = get_ids(dir_img_val)
 
+    ids_train.sort()
+    ids_val.sort()
+
     print('''
     Starting training:
         Epochs: {}
@@ -49,35 +52,35 @@ def train_net(net,
                           momentum=0.9,
                           weight_decay=0.0005)
 
-    criterion = nn.BCELoss()
+    criterion = nn.MSELoss()
 
     for epoch in range(epochs):
         print('Starting epoch {}/{}.'.format(epoch + 1, epochs))
         net.train()
 
         # reset the generators
-        train = get_imgs_and_bboxes(ids_train.sort(), dir_img_train, filepath_annotations_train)
-        val = get_imgs_and_bboxes(ids_val.sort(), dir_img_val, filepath_annotations_val)
+        train = get_imgs_and_bboxes(ids_train, dir_img_train, filepath_annotations_train)
+        val = get_imgs_and_bboxes(ids_val, dir_img_val, filepath_annotations_val)
 
         epoch_loss = 0
 
         for i, b in enumerate(batch(train, batch_size)):
             imgs = np.array([i[0] for i in b]).astype(np.float32)
-            true_masks = np.array([i[1] for i in b])
+            true_bbox = np.array([i[1] for i in b])
 
             imgs = torch.from_numpy(imgs)
-            true_masks = torch.from_numpy(true_masks)
+            true_bbox = torch.from_numpy(true_bbox)
 
             if gpu:
                 imgs = imgs.cuda()
-                true_masks = true_masks.cuda()
+                true_bbox = true_bbox.cuda()
 
-            masks_pred = net(imgs)
-            masks_probs_flat = masks_pred.view(-1)
+            bbox_pred = net(imgs)
+            bbox_probs_flat = bbox_pred.view(-1)
 
-            true_masks_flat = true_masks.view(-1)
+            true_bbox_flat = true_bbox.view(-1)
 
-            loss = criterion(masks_probs_flat, true_masks_flat)
+            loss = criterion(bbox_probs_flat, true_bbox_flat)
             epoch_loss += loss.item()
 
             print('{0:.4f} --- loss: {1:.6f}'.format(i * batch_size / N_train, loss.item()))

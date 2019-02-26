@@ -6,14 +6,13 @@ import os
 
 import numpy as np
 from PIL import Image
-
+import json
 from .utils import *
 
 
 def get_ids(dir):
-    """Returns a list of the ids in the directory
-    and strips the heading zeros"""
-    return (f[:-4].lstrip("0") for f in os.listdir(dir))
+    """Returns a list of the ids in the directory"""
+    return [f[:-4] for f in os.listdir(dir)]
 
 
 def split_ids(ids, n=2):
@@ -45,7 +44,7 @@ def get_full_img_and_mask(id, dir_img, dir_mask):
     mask = Image.open(dir_mask + id + '_mask.gif')
     return np.array(im), np.array(mask)
 
-def to_resized_imgs(ids, dir, suffix):
+def to_resized_rgb_imgs(ids, dir, suffix):
     for id in ids:
         im = resize_image(Image.open(dir + id + suffix))
         yield im
@@ -84,24 +83,14 @@ def load_annotation_information(annotation_filepath):
     
     return img_dimensions, bounding_boxes
 
-def to_standard_dimension(bounding_boxes, dimension = 100):
-    ''' Make the number of bounding boxes in an image a constant dimension
-    Append zero bounding boxes where there were less bounding boxes '''
-    null_bbox = np.array([[0.0001,0.0001,0.0001,0.0001]])
 
-    for i in bounding_boxes.keys():
-        num_bboxes = bounding_boxes[i].shape[0]
-        for j in range(dimension - num_bboxes):
-            bounding_boxes[i] = np.append(bounding_boxes[i], null_bbox, axis = 0).flatten()
-    
-    return bounding_boxes
 
-def get_imgs_and_bboxes(ids, dir_img, dir_bbox, annotation_filepath):
+def get_imgs_and_bboxes(ids, dir_img, annotation_filepath):
     """  Load & resize images, get labels (bounding boxes) """
     img_dimensions, bounding_boxes = load_annotation_information(annotation_filepath)
     #Resize images to match input format 
     #Normalize and switch to CHW
-    imgs = to_resized_imgs(ids, dir_img, '.jpg')
+    imgs = to_resized_rgb_imgs(ids, dir_img, '.jpg')
     imgs_switched = map(hwc_to_chw, imgs)
     imgs_normalized = map(normalize, imgs_switched)
     
